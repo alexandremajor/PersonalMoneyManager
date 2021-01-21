@@ -1,4 +1,13 @@
 class Spending:
+	"""
+	Used to represent a single spending.
+	Attributes:
+		amount(float):amount of money of the expense
+		date(string):date of the expense (DD/MM/YYYY)
+		category(string):category of the expense
+		note(string):optional description
+		key(int):unique ID (rowid in databse when retrieved, otherwise None)
+	"""
 	def __init__(self,amount,date,category,note="",key=None):
 		self.amount=amount
 		self.date=date
@@ -6,32 +15,24 @@ class Spending:
 		self.note=note
 		self.key=key
 	def __str__(self):
+		"""
+		None -> str
+		Returns a string representation of the object.
+		"""
 		return str(self.amount)+"$ on "+str(self.date)+" in category "+str(self.category)
 	def csv(self):
 		return str(self.amount)+","+str(self.date)+","+str(self.category)
 	def __cmp__(self,other):
+		"""
+		Spending -> boolean
+		Compares two Spending objects according to their amounts.
+		"""
 		return self.amount>other.amount
 	def full(self):
+		"""
+		None -> str
+		Returns a string representation of the object with every attribute.
+		"""
 		return self.__str__()+" with id "+str(self.key)
 
-def create_spend():
-	while(True):
-		x=input()
-		if (x=="n"):
-			return None;
-		try:
 
-			amount=float(input("What is the amount spent?:"))
-			if (amount <= 0):
-				raise AttributeError("The amount can only be positive!")
-			date=input("What date?")
-			if (len(date)!=5 or date[2]!="/"):
-				raise AttributeError("The date format is invalid.")
-			print("Categories:\n1. Groceries\n2. Rent\n3. Services\n4. Food\n5. Entertainment\n6. Others")
-			category=int(input("Choose one category above (number only):"))
-			if not category in (1,2,3,4,5,6):
-				raise AttributeError("Invalid category.")
-			note=input("Enter an optional note:")
-			return Spending(amount,date,category,note)
-		except Exception as e:
-			print(e)		

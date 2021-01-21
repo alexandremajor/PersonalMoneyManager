@@ -2,6 +2,13 @@ import sqlite3
 import Controls.spend as spend
 import json
 class Connection:
+	"""
+	Used to represent a connection to the database.
+	Attributes:
+		database(string):path to database
+		connection(sqlite3.connection):connection object to database
+		save_loc(string):path to location where csv files are stored
+	"""
 	def __init__(self):
 		with open("conf.json") as conf:
 			paths=json.load(conf)
@@ -10,12 +17,20 @@ class Connection:
 		self.save_loc=str(paths["SAVE_LOCATION"])
 
 	def write(self,entry):
+		"""
+		Spending -> None
+		Writes a Spending object into the database.
+		"""
 		crsr=self.connection.cursor()
 		sql_comm="INSERT INTO expenses VALUES ("+str(entry.amount)+", \""+str(entry.date)+"\", \""+str(entry.category)+"\", \""+str(entry.note)+"\");"
 		crsr.execute(sql_comm)
 		self.connection.commit()
 	
 	def get_last(self):
+		"""
+		None -> Spending
+		Reads from the database the last written entry and returns it as a Spending object.
+		"""
 		crsr=self.connection.cursor()
 		sql_comm="SELECT rowid,* FROM expenses ORDER BY rowid DESC LIMIT 1;"
 		crsr.execute(sql_comm)
@@ -26,10 +41,10 @@ class Connection:
 	def read(self,date):
 		"""
 		list -> list
-		Returns a list of spend objects in a list.
+		Retrieves all entries between two dates from the database. Takes as input a list containing the two date endpoints (inclusive) and returns a list of spend objects.
 		"""
 		crsr=self.connection.cursor()
-		sql_command="SELECT rowid,* FROM expenses WHERE date < \'"+ str(date[1])+"\' and date > \'"+str(date[0])+"\';"
+		sql_command="SELECT rowid,* FROM expenses WHERE date <= \'"+ str(date[1])+"\' and date >= \'"+str(date[0])+"\';"
 		crsr.execute(sql_command)
 		ans=crsr.fetchall()
 		spend_list=[]
@@ -39,6 +54,10 @@ class Connection:
 		return spend_list
 
 	def make_csv(self,data,name):
+		"""
+		Spending, str -> str
+		Converts the Spending object into csv format string and writes it in a csv file. The function takes as input data, a Spending object, and name, the desired name for the csv file (without .csv extension).
+		"""
 		name=self.save_loc+str(name)+'.csv'
 		f=open(name,'w+')
 		for spend in data:
@@ -47,4 +66,8 @@ class Connection:
 		f.close()
 		return name
 	def __del__(self):
+		"""
+		None -> None
+		Invoked when the object is destroyed. Closes the database connection.
+		"""
 		self.connection.close()
